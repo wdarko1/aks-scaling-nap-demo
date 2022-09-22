@@ -1,6 +1,7 @@
 ## Setup
 1. Login using `az login`
 1. Make sure `kubectl` is installed
+1. Make sure `kubectl ns` plugin is installed (see: <https://github.com/ahmetb/kubectx#kubectl-plugins-macos-and-linux>)
 1. Make sure `hey` is installed
 1. Edit `./setup-infra.sh` to specify parameters
 1. Run `./setup-infra.sh`
