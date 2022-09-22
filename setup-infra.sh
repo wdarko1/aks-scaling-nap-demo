@@ -119,28 +119,50 @@ helm install http-add-on kedacore/keda-add-ons-http --namespace kube-system
 echo "Installing the Vertical Pod Autoscaler"
 ./autoscaler/vertical-pod-autoscaler/hack/vpa-up.sh
 
-# Apply the YAMLs
-echo "Installing the application"
-kubectl create ns serverloader
-kubectl ns serverloader
-kubectl apply -f ./0-basic-vpa-keda
-
-# Annotate the Ingress with the certificate URI
-echo "Annotating the ingress with the Key Vault certificate URI"
-KEYVAULT_CERTIFICATE_URI=$(az keyvault certificate show --vault-name ${KV_NAME} -n ${CERTIFICATE_NAME} --query "id" --output tsv)
-kubectl annotate ingress/serverloader -n kube-system --overwrite kubernetes.azure.com/tls-cert-keyvault-uri=${KEYVAULT_CERTIFICATE_URI}
-
-echo "Done"
-echo "\n"
+echo "========================================================"
+echo "|            INFRASTRUCTURE SETUP COMPLETED            |"
+echo "========================================================"
+echo ""
+echo "========================================================"
+echo "|                DEPLOY THE APPLICATION                |"
+echo "========================================================"
+echo ""
+echo "Run the following commands:"
+echo "==========================="
+echo "kubectl create ns serverloader"
+echo "kubectl ns serverloader"
+echo "kubectl apply -f ./manifests/0-basic-vpa-keda"
+echo ""
+echo "Wait for a few minutes to make sure the deployments are ready."
+echo ""
+echo "Annotate the ingress with the Key Vault certificate URI by running this command:"
+echo "================================================================================"
+echo "KEYVAULT_CERTIFICATE_URI=$(az keyvault certificate show --vault-name ${KV_NAME} -n ${CERTIFICATE_NAME} --query "id" --output tsv)"
+echo "kubectl annotate ingress/serverloader -n kube-system --overwrite kubernetes.azure.com/tls-cert-keyvault-uri=${KEYVAULT_CERTIFICATE_URI}"
+echo ""
+echo ""
+echo "========================================================"
+echo "|                GO UPDATE YOUR DNS ZONE                |"
+echo "========================================================"
+echo ""
+echo "Make sure that your Azure DNS zone has been updated to properly resolve the hostname."
+echo ""
+echo "========================================================"
+echo "|                 TEST THE APPLICATION                 |"
+echo "========================================================"
+echo ""
 echo "To test with DNS zone updated:"
+echo "=============================="
 echo "curl -k https://serverloader.${AZUREDNS_NAME}/workout"
 echo "curl -k https://serverloader.${AZUREDNS_NAME}/stats"
-echo "\n"
+echo ""
 echo "otherwise, you will need to expose the 'keda-add-ons-http-interceptor-proxy' service in kube-system via a LoadBalancer and make requests while setting the proper header."
 echo ""
-echo "To generate load:"
-echo "hey -n 200000 -c 300 https://serverloader.${AZUREDNS_NAME}/workout"
-echo "\n"
+echo "========================================================"
+echo "|                    GENERATE LOAD                     |"
+echo "========================================================"
+echo ""
+echo "hey -n 200000 -c 200 https://serverloader.${AZUREDNS_NAME}/workout"
 
 #osm namespace add serverloader
 
