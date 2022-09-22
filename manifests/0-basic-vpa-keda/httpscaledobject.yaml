@@ -1,0 +1,14 @@
+kind: HTTPScaledObject
+apiVersion: http.keda.sh/v1alpha1
+metadata:
+    name: serverloader
+spec:
+    host: serverloader.demo.azure.sabbour.me
+    targetPendingRequests: 50
+    scaleTargetRef:
+        deployment: serverloader
+        service: serverloader
+        port: 80
+    replicas:
+        min: 1
+        max: 20

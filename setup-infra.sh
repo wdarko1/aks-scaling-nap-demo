@@ -3,23 +3,23 @@
 # Parameters
 LOCATION=eastus
 
-CLUSTER_NAME=kedavpademo
-CLUSTER_RG=kedavpademo-rg
+CLUSTER_NAME=contososcaling
+CLUSTER_RG=contososcaling-rg
 
-ACR_NAME=kedavpademoacr
-ACR_RG=kedavpademo-rg
+ACR_NAME=contososcalingacr
+ACR_RG=${CLUSTER_RG}
 
-KV_NAME=kedavpademokv
-KV_RG=kedavpademo-rg
-CERTIFICATE_NAME=kedavpademo-wild
+KV_NAME=contososcalingkv
+KV_RG=${CLUSTER_RG}
+CERTIFICATE_NAME=contososcaling-wild
 
 AZUREDNS_NAME=demo.azure.sabbour.me
-AZUREDNS_RG=kedavpademo-rg
+AZUREDNS_RG=${CLUSTER_RG}
 
-AZURE_TENANT_ID=$(az account show --query tenantId -o tsv)
-AZURE_SUBSCRIPTION_ID=$(az account show --query id -o tsv)
+VNET_NAME=contososcalingvnet
+VNET_RG=${CLUSTER_RG}
 
-# Make sure the KEDA Preview feature is registered
+# Make sure the features are registered
 echo "Registering the required providers and features"
 az extension add --upgrade --name aks-preview
 az feature register --name AKS-KedaPreview --namespace Microsoft.ContainerService
@@ -49,21 +49,35 @@ az keyvault certificate create --vault-name ${KV_NAME} -n ${CERTIFICATE_NAME} -p
 echo "Creating an Azure Container Registry ${ACR_NAME}"
 az acr create -n ${ACR_NAME} -g ${ACR_RG} -l ${LOCATION} --sku Basic
 
-# Create AKS cluster attached to the registry and activate Web App Routing, Key Vault CSI, OSM, Monitoring
+# Create a Virtual Network since Virtual Nodes requires custom subnets
+echo "Creating a Virtual Network since Virtual Nodes requires custom subnets ${VNET_NAME}"
+az network vnet create -n ${VNET_NAME} -g ${VNET_RG} -l ${LOCATION} \
+--address-prefixes 10.0.0.0/8 \
+--subnet-name aks-subnet \
+--subnet-prefix 10.240.0.0/16
+AKSVNET_SUBNETID=$(az network vnet subnet show --name aks-subnet --vnet-name ${VNET_NAME} -g ${VNET_RG}  --query id -o tsv)
+
+# Create a subnet for the virtual nodes
+echo "Creating a subnet for the virtual nodes"
+az network vnet subnet create -n vn-subnet -g ${VNET_RG} \
+--vnet-name ${VNET_NAME} \
+--address-prefixes 10.241.0.0/16 
+
+# Create AKS cluster with the required add-ons and configuration
 echo "Creating an Azure Kubernetes Service cluster with add-ons enabled"
-az aks create -n ${CLUSTER_NAME} -g ${CLUSTER_RG} --node-count 3 --generate-ssh-keys \
---enable-addons azure-keyvault-secrets-provider,open-service-mesh,web_application_routing, monitoring, virtual-node \
+az aks create -n ${CLUSTER_NAME} -g ${CLUSTER_RG} --generate-ssh-keys \
+--enable-addons azure-keyvault-secrets-provider,web_application_routing,monitoring,virtual-node \
+--vnet-subnet-id ${AKSVNET_SUBNETID} \
+--aci-subnet-name vn-subnet \
 --enable-managed-identity \
 --enable-msi-auth-for-monitoring \
 --enable-secret-rotation \
 --enable-keda \
---attach-acr ${ACR_NAME}
-
-# Update the Web App Routing add-on to use Azure DNS
-echo "Updating the Web Application Routing add-on to use the Azure DNS zone"
-az aks addon update -n ${CLUSTER_NAME} -g ${CLUSTER_RG} \
---addon web_application_routing \
---dns-zone-resource-id=${AZUREDNS_RESOURCEID}
+--enable-cluster-autoscaler \
+--min-count 3 \
+--max-count 6 \
+--node-vm-size Standard_DS4_v2 \
+--network-plugin azure
 
 # Retrieve the user managed identity object ID for the Web App Routing add-on
 echo "Retrieving the managed identity for the Web Application Routing add-on"
@@ -75,8 +89,18 @@ USERMANAGEDIDENTITY_RESOURCEID="/subscriptions/${SUBSCRIPTION_ID}/resourceGroups
 MANAGEDIDENTITY_OBJECTID=$(az resource show --id $USERMANAGEDIDENTITY_RESOURCEID --query "properties.principalId" -o tsv | tr -d '[:space:]')
 
 # Grant the Web App Routing add-on certificate read access on the Key Vault
-echo "Granting the We Application Routing add-on certificate read access on the Key Vault"
-az keyvault set-policy --name $KV_NAME --object-id $MANAGEDIDENTITY_OBJECTID --secret-permissions get --certificate-permissions get
+echo "Granting the Web Application Routing add-on certificate read access on the Key Vault"
+az keyvault set-policy --name ${KV_NAME} --object-id  ${MANAGEDIDENTITY_OBJECTID} --secret-permissions get --certificate-permissions get
+
+# Grant the Web App Routing add-on Contributor prmissions on the Azure DNS zone
+echo "Granting the Web Application Routing add-on Contributor access on the Azure DNS zone"
+az role assignment create --role "DNS Zone Contributor" --assignee ${MANAGEDIDENTITY_OBJECTID} --scope ${AZUREDNS_RESOURCEID}
+
+# Update the Web App Routing add-on to use Azure DNS
+echo "Updating the Web Application Routing add-on to use the Azure DNS zone"
+az aks addon update -n ${CLUSTER_NAME} -g ${CLUSTER_RG} \
+--addon web_application_routing \
+--dns-zone-resource-id=${AZUREDNS_RESOURCEID}
 
 # Retrieve AKS cluster credentials
 echo "Retrieving the Azure Kubernetes Service cluster credentials"
@@ -90,3 +114,33 @@ helm repo update
 # Install the KEDA HTTP Add-on into kube-system
 echo "Installing the KEDA HTTP add-on into kube-system"
 helm install http-add-on kedacore/keda-add-ons-http --namespace kube-system
+
+# Install the Vertical Pod Autoscaler
+echo "Installing the Vertical Pod Autoscaler"
+./autoscaler/vertical-pod-autoscaler/hack/vpa-up.sh
+
+# Apply the YAMLs
+echo "Installing the application"
+kubectl create ns serverloader
+kubectl ns serverloader
+kubectl apply -f ./0-basic-vpa-keda
+
+# Annotate the Ingress with the certificate URI
+echo "Annotating the ingress with the Key Vault certificate URI"
+KEYVAULT_CERTIFICATE_URI=$(az keyvault certificate show --vault-name ${KV_NAME} -n ${CERTIFICATE_NAME} --query "id" --output tsv)
+kubectl annotate ingress/serverloader -n kube-system --overwrite kubernetes.azure.com/tls-cert-keyvault-uri=${KEYVAULT_CERTIFICATE_URI}
+
+echo "Done"
+echo "\n"
+echo "To test with DNS zone updated:"
+echo "curl -k https://serverloader.${AZUREDNS_NAME}/workout"
+echo "curl -k https://serverloader.${AZUREDNS_NAME}/stats"
+echo "\n"
+echo "otherwise, you will need to expose the 'keda-add-ons-http-interceptor-proxy' service in kube-system via a LoadBalancer and make requests while setting the proper header."
+echo ""
+echo "To generate load:"
+echo "hey -n 200000 -c 300 https://serverloader.${AZUREDNS_NAME}/workout"
+echo "\n"
+
+#osm namespace add serverloader
+
