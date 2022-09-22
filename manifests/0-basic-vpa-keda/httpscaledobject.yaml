@@ -4,7 +4,7 @@ metadata:
     name: serverloader
 spec:
     host: serverloader.demo.azure.sabbour.me
-    targetPendingRequests: 50
+    targetPendingRequests: 25
     scaleTargetRef:
         deployment: serverloader
         service: serverloader

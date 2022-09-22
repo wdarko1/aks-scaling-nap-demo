@@ -162,7 +162,7 @@ echo "========================================================"
 echo "|                    GENERATE LOAD                     |"
 echo "========================================================"
 echo ""
-echo "hey -n 200000 -c 200 https://serverloader.${AZUREDNS_NAME}/workout"
+echo "hey -n 200000 -c 500 https://serverloader.${AZUREDNS_NAME}/workout"
 
 #osm namespace add serverloader
 
