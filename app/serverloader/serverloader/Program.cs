@@ -21,6 +21,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.MapGet("/", () =>
+{
+    return "App is up";
+});
+
 app.MapGet("/workout", () =>
 {
     // Generate a random string
