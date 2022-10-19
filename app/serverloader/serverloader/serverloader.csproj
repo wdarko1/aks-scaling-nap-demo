@@ -11,6 +11,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
+    <PackageReference Include="prometheus-net" Version="7.0.0-pre-000305-75cc817" />
+    <PackageReference Include="prometheus-net.AspNetCore" Version="7.0.0-pre-000305-75cc817" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
   </ItemGroup>
 

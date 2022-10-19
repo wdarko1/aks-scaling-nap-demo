@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Diagnostics;
 using System.Text;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 var memory = new List<string>();
@@ -15,11 +16,15 @@ var app = builder.Build();
 var rand = new Random();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI();
+
+// Start the Prometheus metrics exporter to expose at /metrics
+app.UseMetricServer();
+app.UseHttpMetrics(options=>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    options.AddCustomLabel("host", context => context.Request.Host.Host);
+});
 
 app.MapGet("/", () =>
 {
