@@ -39,15 +39,11 @@ app.MapGet("/workout", () =>
     // Bubble sort to do some work
     //var sortedString = BubbleSortString(randomString);
 
-    // Store it in memory twice
+    // Store it in memory multiple times
     memory.Add(randomString);
     memory.Add(randomString);
-
-    // Count all instances of all the letters
-    for (char c = 'A'; c < 'Z'; c++)
-    {
-        CountOccuranceOf(c, randomString);
-    }
+    memory.Add(randomString);
+    memory.Add(randomString);
 
     // Return it
     return randomString;
