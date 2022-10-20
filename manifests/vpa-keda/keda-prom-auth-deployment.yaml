@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: keda-prom-auth
+  name: keda-prom-auth
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keda-prom-auth
+  template:
+    metadata:
+      labels:
+        app: keda-prom-auth
+      name: keda-prom-auth
+    spec:
+      containers:
+        - name: azure-prom-auth
+          image: aksexperiences.azurecr.io/nasundar-dev/aad-auth-proxy:v1
+          imagePullPolicy: Always
+          ports:
+            - name: auth-port
+              containerPort: 8082
+          env:
+            - name: AUDIENCE
+              value: https://prometheus.monitor.azure.com
+            - name: TARGET_HOST
+              value: defaultazuremonitorworkspace-wus-bgjq.westus.prometheus.monitor.azure.com # Example: naga-aad-auth-proxy-msi-ws-0vxi.eastus.prometheus.monitor.azure.com
+            - name: LISTENING_PORT
+              value: "8082"
+            - name: IDENTITY_TYPE
+              value: userAssigned
+            - name: AAD_CLIENT_ID
+              value: 441c7ef3-2739-416b-9a96-e978d4b57b82 # Example: 052cfed1-8e5e-4712-9300-eef159116211
+            - name: AAD_TENANT_ID
+              value: "72f988bf-86f1-41af-91ab-2d7cd011db47"
+      imagePullSecrets:
+        - name: aksexperiences-secret

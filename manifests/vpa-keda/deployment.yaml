@@ -4,7 +4,6 @@ metadata:
   name: serverloader
   namespace: serverloader
 spec:
-  replicas: 3
   selector:
     matchLabels:
       app: serverloader
@@ -12,17 +11,22 @@ spec:
     metadata:
       labels:
         app: serverloader
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/scheme: "http"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "80"
     spec:
       containers:
         - name: serverloader
-          image: ghcr.io/sabbour/serverloader:latest
+          image: ghcr.io/sabbour/aks-scaling-demo:main
           resources:
             requests:
-              cpu: 100m
-              memory: 80Mi
+              cpu: 100m # intentionally low, to be updated by VPA
+              memory: 100Mi # intentionally low, to be updated by VPA
             limits:
-              cpu: 100m
-              memory: 250Mi
+              cpu: 100m # intentionally low, to be updated by VPA
+              memory: 250Mi # intentionally low, to be updated by VPA
           imagePullPolicy: Always
           ports:
             - name: http

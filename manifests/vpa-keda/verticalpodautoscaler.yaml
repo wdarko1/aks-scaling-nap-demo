@@ -14,9 +14,9 @@ spec:
     containerPolicies:
       - containerName: '*'
         minAllowed:
-          cpu: 100m
-          memory: 80Mi
+          cpu: 200m
+          memory: 150Mi
         maxAllowed:
-          cpu: 2
+          cpu: 2000m
           memory: 500Mi
         controlledResources: ["cpu", "memory"]
