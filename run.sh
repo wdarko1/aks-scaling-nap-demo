@@ -99,6 +99,7 @@ AZUREMONITOR_PROM_ENDPOINT=$(az resource show --id $AZUREMONITORWORKSPACE_RESOUR
 # Retrieve the kubelet identity
 echo "Retrieving kubelet identity clientId for cluster ${CLUSTER_NAME}"
 KUBELETIDENTITY_CLIENT_ID=$(az aks show -g ${CLUSTER_RG} -n ${CLUSTER_NAME} --query "identityProfile.kubeletidentity.objectId" -o tsv)
+AAD_CLIENT_ID=$(az aks show -g ${CLUSTER_RG} -n ${CLUSTER_NAME} --query "identityProfile.kubeletidentity.clientId" -o tsv)
 
 # Assigning the Monitoring Data Reader role
 echo "Assigning the Monitoring Data Reader role"
@@ -134,7 +135,7 @@ echo "========================================================"
 echo "|           UPDATING PROMETHEUS AUTH CONFIG            |"
 echo "========================================================"
 echo ""
-yq -i "(.spec.template.spec.containers[0].env[] | select(.name == \"AAD_CLIENT_ID\").value) = \"${KUBELETIDENTITY_CLIENT_ID}\"" manifests/vpa-keda/keda-prom-auth-deployment.yaml
+yq -i "(.spec.template.spec.containers[0].env[] | select(.name == \"AAD_CLIENT_ID\").value) = \"${AAD_CLIENT_ID}\"" manifests/vpa-keda/keda-prom-auth-deployment.yaml
 yq -i "(.spec.template.spec.containers[0].env[] | select(.name == \"AAD_TENANT_ID\").value) = \"${TENANT_ID}\"" manifests/vpa-keda/keda-prom-auth-deployment.yaml
 yq -i "(.spec.template.spec.containers[0].env[] | select(.name == \"TARGET_HOST\").value) = \"${AZUREMONITOR_PROM_ENDPOINT}\"" manifests/vpa-keda/keda-prom-auth-deployment.yaml
 
