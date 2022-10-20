@@ -33,8 +33,8 @@ spec:
             - name: IDENTITY_TYPE
               value: userAssigned
             - name: AAD_CLIENT_ID
-              value: "" # Example: 052cfed1-8e5e-4712-9300-eef159116211
+              value: "2aaba1ef-9b1c-4ec6-9de3-27f682dfe082" # Example: 052cfed1-8e5e-4712-9300-eef159116211
             - name: AAD_TENANT_ID
-              value: ""
+              value: "72f988bf-86f1-41af-91ab-2d7cd011db47"
       imagePullSecrets:
         - name: aksexperiences-secret

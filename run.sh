@@ -88,10 +88,10 @@ echo "Retrieving the Log Analytics workspace resource id"
 LOGANALYTICSWORKSPACE_RESOURCE_ID=$(az aks show -n ${CLUSTER_NAME} -g ${CLUSTER_RG} --query addonProfiles.omsagent.config.logAnalyticsWorkspaceResourceID -o tsv)
 
 echo "Retrieving the Log Analytics workspace resource group"
-LOGANALYTICSWORKSPACE_RG=$(az resource show --id $LOGANALYTICSWORKSPACE_RESOURCE_ID --query "resourceGroup" -o tsv)
+LOGANALYTICSWORKSPACE_RG=$(az resource show --id ${LOGANALYTICSWORKSPACE_RESOURCE_ID} --query "resourceGroup" -o tsv)
 
 echo "Retrieving the Azure Monitor workspace resource id"
-AZUREMONITORWORKSPACE_RESOURCE_ID=$(az resource list -g ${LOGANALYTICSWORKSPACE_RG} --resource-type microsoft.monitor/accounts --query "[?starts_with(name,'defaultazuremonitorworkspace')].id" -o tsv)
+AZUREMONITORWORKSPACE_RESOURCE_ID=$(az resource list -g ${LOGANALYTICSWORKSPACE_RG} --resource-type microsoft.monitor/accounts --query "[?starts_with(name,'defaultazuremonitorworkspace') || starts_with(name,'DefaultAzureMonitorWorkspace')].id" -o tsv)
 
 echo "Retrieving the Azure Monitor workspace Prometheus query endpoint"
 AZUREMONITOR_PROM_ENDPOINT=$(az resource show --id $AZUREMONITORWORKSPACE_RESOURCE_ID --query "properties.metrics.prometheusQueryEndpoint" -o tsv | sed -e "s/https:\/\///" )
