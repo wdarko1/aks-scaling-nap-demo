@@ -27,13 +27,13 @@ spec:
             - name: AUDIENCE
               value: https://prometheus.monitor.azure.com
             - name: TARGET_HOST
-              value: "defaultazuremonitorworkspace-wus-iqnl.westus.prometheus.monitor.azure.com" # Example: naga-aad-auth-proxy-msi-ws-0vxi.eastus.prometheus.monitor.azure.com
+              value: "defaultazuremonitorworkspace-eus-728p.eastus.prometheus.monitor.azure.com" # Example: naga-aad-auth-proxy-msi-ws-0vxi.eastus.prometheus.monitor.azure.com
             - name: LISTENING_PORT
               value: "8082"
             - name: IDENTITY_TYPE
               value: userAssigned
             - name: AAD_CLIENT_ID
-              value: "3c7e3467-3bdf-4a8c-9560-7e191da4a21c" # Example: 052cfed1-8e5e-4712-9300-eef159116211
+              value: "915ced6e-de36-4209-8173-808f0289b33e" # Example: 052cfed1-8e5e-4712-9300-eef159116211
             - name: AAD_TENANT_ID
               value: "72f988bf-86f1-41af-91ab-2d7cd011db47"
       imagePullSecrets:
