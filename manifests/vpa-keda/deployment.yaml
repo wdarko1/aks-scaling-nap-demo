@@ -22,8 +22,8 @@ spec:
           image: ghcr.io/sabbour/aks-scaling-demo:main
           resources:
             requests:
-              cpu: 100m # intentionally low, to be updated by VPA
-              memory: 100Mi # intentionally low, to be updated by VPA
+              cpu: 50m # intentionally low, to be updated by VPA
+              memory: 60Mi # intentionally low, to be updated by VPA
             limits:
               cpu: 100m # intentionally low, to be updated by VPA
               memory: 250Mi # intentionally low, to be updated by VPA

@@ -15,5 +15,5 @@ spec:
       metadata:
         serverAddress:  http://keda-prom-auth.kube-system.svc.cluster.local
         metricName: http_requests_received_total
-        threshold: '100'
+        threshold: '50'
         query: sum(rate(http_requests_received_total{ app="serverloader", code="200", endpoint="/workout"}[1m]))

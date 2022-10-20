@@ -37,7 +37,7 @@ app.MapGet("/workout", () =>
     var randomString = GenerateRandomString(8192);
 
     // Bubble sort to do some work
-   // var sortedString = BubbleSortString(randomString);
+    var sortedString = BubbleSortString(randomString);
 
     // Store it in memory
     memory.Add(randomString);
