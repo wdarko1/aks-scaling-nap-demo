@@ -16,7 +16,7 @@ echo $CLUSTER_RG
 
 echo -e "aksexperiences.azurecr.io admin username (default: aksexperiences): \c"
 read ACRUSER
-LOCATION="${ACRUSER:=aksexperiences}"
+ACRUSER="${ACRUSER:=aksexperiences}"
 
 echo -e "aksexperiences.azurecr.io admin password: \c"
 read ACRPASSWORD
