@@ -25,8 +25,8 @@ spec:
               cpu: 200m
               memory: 100Mi # intentionally low, to be updated by VPA
             limits:
-              cpu: 1000m # intentionally low, to be updated by VPA
-              memory: 250Mi # intentionally low, to be updated by VPA
+              cpu: 300m # intentionally low, to be updated by VPA
+              memory: 150Mi
           imagePullPolicy: Always
           ports:
             - name: http
