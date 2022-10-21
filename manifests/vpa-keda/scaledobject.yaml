@@ -7,7 +7,7 @@ spec:
   scaleTargetRef:
     name: serverloader
   minReplicaCount: 2
-  maxReplicaCount: 50
+  maxReplicaCount: 100
   cooldownPeriod: 30
   pollingInterval: 15
   triggers:
