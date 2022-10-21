@@ -22,10 +22,10 @@ spec:
           image: ghcr.io/sabbour/aks-scaling-demo:main
           resources:
             requests:
-              cpu: 100m # intentionally low, to be updated by VPA
+              cpu: 200m
               memory: 100Mi # intentionally low, to be updated by VPA
             limits:
-              cpu: 500m # intentionally low, to be updated by VPA
+              cpu: 1000m # intentionally low, to be updated by VPA
               memory: 250Mi # intentionally low, to be updated by VPA
           imagePullPolicy: Always
           ports:

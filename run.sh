@@ -72,7 +72,7 @@ az aks create -n ${CLUSTER_NAME} -g ${CLUSTER_RG} \
 --enable-vpa \
 --min-count 3 \
 --max-count 8 \
---node-vm-size Standard_DS2_v2 \
+--node-vm-size Standard_DS3_v2 \
 --kubernetes-version 1.24.6
 
 # Retrieve the Log Analytics workspace and Azure monitor workspace details
