@@ -23,10 +23,7 @@ spec:
           resources:
             requests:
               cpu: 200m
-              memory: 100Mi # intentionally low, to be updated by VPA
-            limits:
-              cpu: 300m # intentionally low, to be updated by VPA
-              memory: 150Mi
+              memory: 100Mi
           imagePullPolicy: Always
           ports:
             - name: http
