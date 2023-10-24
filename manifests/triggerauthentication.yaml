@@ -1,0 +1,9 @@
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: azure-prometheus-auth
+  namespace: serverloader
+spec:
+  podIdentity:
+    provider: azure-workload
+    identityId: "" # Will be updated by the script

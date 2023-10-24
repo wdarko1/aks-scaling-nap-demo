@@ -1,0 +1,20 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: serverloader
+  namespace: serverloader
+spec:
+  scaleTargetRef:
+    name: serverloader
+  minReplicaCount: 2
+  maxReplicaCount: 100
+  cooldownPeriod: 30
+  pollingInterval: 15
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: "" # Will be updated by script
+        threshold: '1'
+        query: sum(irate(nginx_ingress_controller_requests{ingress="serverloader"}[1m]))
+      authenticationRef:
+        name: azure-prometheus-auth

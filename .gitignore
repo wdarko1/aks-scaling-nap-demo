@@ -212,3 +212,6 @@ project.lock.json
 
 manifests/1-vn/*
 hold
+
+# generated .yaml
+*/generated/*.yaml
