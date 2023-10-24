@@ -255,7 +255,7 @@ kubectl apply -f ./manifests/generated/triggerauthentication.yaml
 kubectl apply -f ./manifests/generated/scaledobject.yaml
 
 # Force a restart for the keda operator deployment to pick up the new trigger authentication
-#kubectl rollout restart deployment.apps/keda-operator -n kube-system
+kubectl rollout restart deployment.apps/keda-operator -n kube-system
 
 echo ""
 echo "========================================================"
