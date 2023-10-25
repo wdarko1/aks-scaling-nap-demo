@@ -34,12 +34,12 @@ app.MapGet("/", () =>
 app.MapGet("/workout", () =>
 {
     // Generate a random string
-    var randomString = GenerateRandomString(32*1024);
+    var randomString = GenerateRandomString(4*1024);
 
     // Bubble sort to do some work
     var sortedString = BubbleSortString(randomString);
 
-    // Count the occurance of a random character
+    // Count the occurance of a random character to do some work
     var occuranceCount = CountOccuranceOf(Convert.ToChar(rand.Next(0, 26) + 65),randomString);
 
     // Store it in memory
