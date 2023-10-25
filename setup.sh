@@ -135,17 +135,59 @@ echo "Creating an Azure Kubernetes Service cluster ${CLUSTER_NAME} with Kubernet
 --enable-oidc-issuer \
 --enable-msi-auth-for-monitoring \
 --enable-keda \
---enable-cluster-autoscaler \
---enable-vpa \
---min-count 3 \
---max-count 100 \
---node-vm-size Standard_DS4_v2 \
+--node-vm-size Standard_DS2_v2 \
 --enable-addons azure-keyvault-secrets-provider,web_application_routing \
 --enable-secret-rotation \
 --network-dataplane cilium \
 --network-plugin azure \
 --network-plugin-mode overlay \
---kubernetes-version ${LATEST_K8S_VERSION}
+--kubernetes-version ${LATEST_K8S_VERSION} \
+--enable-cluster-autoscaler \
+--min-count 1 \
+--max-count 5 \
+--cluster-autoscaler-profile \
+    max-empty-bulk-delete=10 \
+    scale-down-delay-after-add=10m \
+    scale-down-unneeded-time=10m \
+    scan-interval=10s 
+
+echo "Creating user node pools"
+az aks nodepool add \
+  -g ${CLUSTER_RG} \
+  -n selftune1 \
+  --cluster-name ${CLUSTER_NAME} \
+  --enable-cluster-autoscaler \
+  --min-count 1 \
+  --max-count 30 \
+  --node-vm-size Standard_B2ms
+
+az aks nodepool add \
+  -g ${CLUSTER_RG} \
+  -n selftune2 \
+  --cluster-name ${CLUSTER_NAME} \
+  --enable-cluster-autoscaler \
+  --min-count 1 \
+  --max-count 30 \
+  --node-vm-size Standard_B2ms
+
+az aks nodepool add \
+  -g ${CLUSTER_RG} \
+  -n selftune3 \
+  --cluster-name ${CLUSTER_NAME} \
+  --enable-cluster-autoscaler \
+  --min-count 1 \
+  --max-count 30 \
+  --node-vm-size Standard_B2ms
+
+az aks nodepool add \
+  -g ${CLUSTER_RG} \
+  -n selftune4 \
+  --cluster-name ${CLUSTER_NAME} \
+  --enable-cluster-autoscaler \
+  --min-count 1 \
+  --max-count 30 \
+  --node-vm-size Standard_B2ms
+
 
 echo ""
 echo "========================================================"
@@ -210,6 +252,7 @@ echo ""
 echo "Importing the nginx dashboards into Grafana"
 az grafana dashboard import -n ${IDENTIFIER}  -g ${CLUSTER_RG} --definition @./grafana/nginx.json
 az grafana dashboard import -n ${IDENTIFIER}  -g ${CLUSTER_RG} --definition @./grafana/request-handling-performance.json
+az grafana dashboard import -n ${IDENTIFIER}  -g ${CLUSTER_RG} --definition @./grafana/demo-dashboard.json
 
 # Retrieve AKS cluster credentials
 echo "Retrieving the Azure Kubernetes Service cluster credentials"
