@@ -33,20 +33,31 @@ app.MapGet("/", () =>
 
 app.MapGet("/workout", () =>
 {
+    // Size of a single string to be stored in memory
+    var sizeKB = 64;
+    var limitInMB = 120;
+
     // Generate a random string
-    var randomString = GenerateRandomString(4*1024);
+    var randomString = GenerateRandomString(sizeKB*1024);
 
     // Bubble sort to do some work
     var sortedString = BubbleSortString(randomString);
 
-    // Count the occurance of a random character to do some work
-    var occuranceCount = CountOccuranceOf(Convert.ToChar(rand.Next(0, 26) + 65),randomString);
-
     // Store it in memory
-    memory.Add(randomString);
+    memory.Add(sortedString);
+
+    // Get the size of strings in the memory in KB
+    var memorySizeInKB = memory.Count*sizeKB;
+
+    // Garbage collect every once in a while when the number of items in the memory grows to limitInMB
+    if(memorySizeInKB >= limitInMB*1024)
+    {
+        memory.Clear();
+        GC.Collect();
+    }
 
     // Return it
-    return randomString;
+    return sortedString;
 })
 .WithName("GetWorkout");
 
@@ -69,11 +80,11 @@ app.MapGet("/healthz", () =>
 
 app.Run();
 
-string GenerateRandomString(int Length)
+string GenerateRandomString(int LengthInBytes)
 {
     var stringBuilder = new StringBuilder();
     char letter;
-    for (int i = 0; i < Length; i++)
+    for (int i = 0; i < LengthInBytes; i++)
     {
         int randValue = rand.Next(0, 26);
         letter = Convert.ToChar(randValue + 65);
