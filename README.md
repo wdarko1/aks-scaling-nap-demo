@@ -3,7 +3,6 @@
 ## Components
 
 1. Cluster autoscaler
-1. Vertical Pod Autoscaler (VPA)
 1. Kubernetes Event Driven Autoscaling (KEDA) with a Prometheus scaler
 1. Azure Monitor managed service for Prometheus
 1. Azure Managed Grafana
