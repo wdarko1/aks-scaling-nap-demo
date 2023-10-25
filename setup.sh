@@ -109,6 +109,9 @@ az role assignment create --assignee ${CURRENT_OBJECT_ID} --role "Grafana Admin"
 echo "Granting Monitoring Reader role assignment to Grafana on the Azure Monitor workspace"
 az role assignment create --assignee ${AZUREGRAFANA_PRINCIPALID} --role "Monitoring Reader" --scope ${AZUREMONITORWORKSPACE_RESOURCE_ID}
 
+echo "Granting Monitoring Reader role assignment to Grafana on the subscription"
+az role assignment create --assignee ${AZUREGRAFANA_PRINCIPALID} --role "Monitoring Reader" --subscription ${AZURE_SUBSCRIPTION_ID}
+
 echo "Sleeping to allow for identity to propagate"
 sleep 60
 
@@ -124,7 +127,7 @@ LATEST_K8S_VERSION=$(az aks get-versions --location ${LOCATION} --query "values[
 
 # Create AKS cluster with the required add-ons and configuration
 echo "Creating an Azure Kubernetes Service cluster ${CLUSTER_NAME} with Kubernetes version ${LATEST_K8S_VERSION}"
-az aks create -n ${CLUSTER_NAME} -g ${CLUSTER_RG} \
+  -n ${CLUSTER_NAME} -g ${CLUSTER_RG} \
 --enable-azure-monitor-metrics \
 --azure-monitor-workspace-resource-id ${AZUREMONITORWORKSPACE_RESOURCE_ID} \
 --grafana-resource-id ${AZUREGRAFANA_ID} \

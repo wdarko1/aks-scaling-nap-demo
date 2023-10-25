@@ -24,6 +24,9 @@ spec:
             requests:
               cpu: 200m
               memory: 100Mi
+            limits:
+              cpu: 200m
+              memory: 600Mi
           imagePullPolicy: Always
           ports:
             - name: http
