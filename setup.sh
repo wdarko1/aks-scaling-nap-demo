@@ -252,6 +252,7 @@ echo ""
 kubectl apply -f ./manifests/namespace.yaml
 kubectl apply -f ./manifests/deployment.yaml
 kubectl apply -f ./manifests/service.yaml
+kubectl apply -f ./manifests/pdb.yaml
 kubectl apply -f ./manifests/generated/ingress.yaml
 kubectl apply -f ./manifests/verticalpodautoscaler.yaml
 kubectl apply -f ./manifests/generated/triggerauthentication.yaml
