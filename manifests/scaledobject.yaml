@@ -6,7 +6,7 @@ metadata:
 spec:
   scaleTargetRef:
     name: serverloader
-  minReplicaCount: 1
+  minReplicaCount: 2
   maxReplicaCount: 1000
   cooldownPeriod: 30
   pollingInterval: 15
