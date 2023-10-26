@@ -157,7 +157,8 @@ while [[ "$(az aks show -n ${CLUSTER_NAME} -g ${CLUSTER_RG} --query 'provisionin
     sleep 10
 done
 
-echo "Creating user node pools"
+echo ""
+echo "Creating user node pools 1/4"
 az aks nodepool add \
   -g ${CLUSTER_RG} \
   -n selftune1 \
@@ -167,6 +168,8 @@ az aks nodepool add \
   --max-count 30 \
   --node-vm-size Standard_B2ms
 
+echo ""
+echo "Creating user node pools 2/4"
 az aks nodepool add \
   -g ${CLUSTER_RG} \
   -n selftune2 \
@@ -176,6 +179,8 @@ az aks nodepool add \
   --max-count 30 \
   --node-vm-size Standard_B2ms
 
+echo ""
+echo "Creating user node pools 3/4"
 az aks nodepool add \
   -g ${CLUSTER_RG} \
   -n selftune3 \
@@ -185,6 +190,8 @@ az aks nodepool add \
   --max-count 30 \
   --node-vm-size Standard_B2ms
 
+echo ""
+echo "Creating user node pools 4/4"
 az aks nodepool add \
   -g ${CLUSTER_RG} \
   -n selftune4 \
@@ -258,8 +265,7 @@ echo ""
 echo "Importing the nginx dashboards into Grafana"
 az grafana dashboard import -n ${IDENTIFIER}  -g ${CLUSTER_RG} --definition @./grafana/nginx.json
 az grafana dashboard import -n ${IDENTIFIER}  -g ${CLUSTER_RG} --definition @./grafana/request-handling-performance.json
-az grafana dashboard import -n ${IDENTIFIER}  -g ${CLUSTER_RG} --definition @./grafana/demo-dashboard.json
-az grafana dashboard import -n kubecon110 -g kubecon110-rg --definition @./grafana/demo-dashboard.json
+az grafana dashboard create -n ${IDENTIFIER}  -g ${CLUSTER_RG} --definition @./grafana/demo-dashboard.json
 
 # Retrieve Grafana dashboard URL
 echo "Retrieving the Grafana dashboard URL"
@@ -341,14 +347,11 @@ echo "curl -k http://${INGRESS_IP}/workout -H \"Host: ${HOSTNAME}\""
 echo "curl -k http://${INGRESS_IP}/metrics -H \"Host: ${HOSTNAME}\""
 echo "curl -k http://${INGRESS_IP}/stats -H \"Host: ${HOSTNAME}\""
 echo ""
-echo "Grafana dashboard: ${GRAFANA_URL}"
-echo ""
-
 echo "curl -k http://${HOSTNAME}/workout"
 echo "curl -k http://${HOSTNAME}/metrics"
-echo "curl -k http://${GRAF}/stats"
 echo ""
-
+echo "Grafana dashboard: ${GRAFANA_URL}"
+echo ""
 echo ""
 echo "========================================================"
 echo "|               CLEAN UP AFTER YOU ARE DONE            |"
