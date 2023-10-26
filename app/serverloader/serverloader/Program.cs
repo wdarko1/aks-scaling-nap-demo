@@ -33,7 +33,7 @@ app.MapGet("/", () =>
 
 app.MapGet("/workout", () =>
 {
-    int randValue = rand.Next(100000, 999999);
+    int randValue = rand.Next(10000, 99999);
     long nthPrime = FindPrimeNumber(randValue);
     memory.Add(nthPrime);
     
