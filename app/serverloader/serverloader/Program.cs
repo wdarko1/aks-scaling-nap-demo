@@ -55,7 +55,7 @@ app.MapGet("/stats", () =>
     var memoryWorkingSetBytes = Environment.WorkingSet;
     var totalPrimes = memory.Count;
     
-    return string.Format("Machine: {0} \nLogical processors: {1}\Primes in memory: {2}\nMemory working set: {3} MB", machineName, processorCount, totalPrimes, memoryWorkingSetBytes/1024/1024) ;
+    return string.Format("Machine: {0} \nLogical processors: {1}\nPrimes in memory: {2}\nMemory working set: {3} MB", machineName, processorCount, totalPrimes, memoryWorkingSetBytes/1024/1024) ;
 })
 .WithName("GetStats");
 
