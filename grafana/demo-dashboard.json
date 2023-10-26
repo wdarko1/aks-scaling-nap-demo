@@ -1,4 +1,14 @@
 {
+    "__inputs": [
+        {
+          "name": "DS_PROMETHEUS",
+          "label": "Prometheus",
+          "description": "",
+          "type": "datasource",
+          "pluginId": "prometheus",
+          "pluginName": "Prometheus"
+        }
+    ],
     "annotations": {
       "list": [
         {
@@ -29,7 +39,7 @@
         "dashes": false,
         "datasource": {
           "type": "prometheus",
-          "uid": "kubeconvsa"
+          "uid": "${datasource}"
         },
         "decimals": 2,
         "editable": true,
@@ -84,7 +94,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "kubeconvsa"
+              "uid": "${datasource}"
             },
             "editorMode": "code",
             "expr": "round(sum(irate(nginx_ingress_controller_requests{ingress=\"$ingress\"}[1m])) by (ingress), 0.001)",
@@ -144,7 +154,7 @@
         "dashes": false,
         "datasource": {
           "type": "prometheus",
-          "uid": "kubeconvsa"
+          "uid": "${datasource}"
         },
         "decimals": 2,
         "editable": false,
@@ -197,7 +207,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "kubeconvsa"
+              "uid": "${datasource}"
             },
             "editorMode": "code",
             "expr": "sum(rate(nginx_ingress_controller_requests{namespace=~\"$namespace\",ingress=~\"$ingress\",status!~\"[4-5].*\"}[1m])) by (ingress) / sum(rate(nginx_ingress_controller_requests{namespace=~\"$namespace\",ingress=~\"$ingress\"}[1m])) by (ingress)",
@@ -247,7 +257,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "kubeconvsa"
+          "uid": "${datasource}"
         },
         "fieldConfig": {
           "defaults": {
@@ -329,7 +339,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "kubeconvsa"
+              "uid": "${datasource}"
             },
             "editorMode": "code",
             "exemplar": true,
@@ -345,7 +355,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "kubeconvsa"
+              "uid": "${datasource}"
             },
             "editorMode": "code",
             "exemplar": true,
@@ -361,7 +371,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "kubeconvsa"
+              "uid": "${datasource}"
             },
             "editorMode": "code",
             "exemplar": true,
@@ -568,7 +578,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "kubeconvsa"
+          "uid": "${datasource}"
         },
         "fieldConfig": {
           "defaults": {
@@ -618,7 +628,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "kubeconvsa"
+              "uid": "${datasource}"
             },
             "editorMode": "code",
             "expr": "count(kube_node_info{cluster=\"$cluster\"})",
@@ -1125,7 +1135,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "kubeconvsa"
+          "uid": "${datasource}"
         },
         "fieldConfig": {
           "defaults": {
@@ -1176,10 +1186,10 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "kubeconvsa"
+              "uid": "${datasource}"
             },
             "editorMode": "code",
-            "expr": "count(node_cpu_seconds_total{job=\"node\", cluster=\"$cluster\", mode=\"idle\", cluster=\"kubeconvsa\"})",
+            "expr": "count(node_cpu_seconds_total{job=\"node\", cluster=\"$cluster\", mode=\"idle\", cluster=\"$cluster\"})",
             "legendFormat": "__auto",
             "range": true,
             "refId": "A"
@@ -1191,7 +1201,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "kubeconvsa"
+          "uid": "${datasource}"
         },
         "fieldConfig": {
           "defaults": {
@@ -1242,7 +1252,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "kubeconvsa"
+              "uid": "${datasource}"
             },
             "editorMode": "code",
             "expr": "sum(node_memory_MemTotal_bytes{job=\"node\", cluster=\"$cluster\"})",
@@ -1752,8 +1762,8 @@
         {
           "current": {
             "selected": false,
-            "text": "Managed_Prometheus_kubeconvsa",
-            "value": "Managed_Prometheus_kubeconvsa"
+            "text": "Managed_Prometheus_${datasource}",
+            "value": "Managed_Prometheus_${datasource}"
           },
           "hide": 0,
           "includeAll": false,
@@ -1770,8 +1780,8 @@
         {
           "current": {
             "selected": false,
-            "text": "kubeconvsa",
-            "value": "kubeconvsa"
+            "text": "${datasource}",
+            "value": "${datasource}"
           },
           "datasource": {
             "type": "datasource",
@@ -1879,7 +1889,7 @@
           },
           "datasource": {
             "type": "prometheus",
-            "uid": "kubeconvsa"
+            "uid": "${datasource}"
           },
           "definition": "label_values(nginx_ingress_controller_requests{cluster=\"$cluster\", namespace=\"$namespace\"},ingress)",
           "hide": 0,
@@ -1930,7 +1940,6 @@
     },
     "timezone": "utc",
     "title": "Demo Dashboard",
-    "uid": "a164a7f0339f99e89cea5cb47e9b6738",
     "version": 50,
     "weekStart": ""
   }

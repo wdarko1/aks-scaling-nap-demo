@@ -259,6 +259,7 @@ echo "Importing the nginx dashboards into Grafana"
 az grafana dashboard import -n ${IDENTIFIER}  -g ${CLUSTER_RG} --definition @./grafana/nginx.json
 az grafana dashboard import -n ${IDENTIFIER}  -g ${CLUSTER_RG} --definition @./grafana/request-handling-performance.json
 az grafana dashboard import -n ${IDENTIFIER}  -g ${CLUSTER_RG} --definition @./grafana/demo-dashboard.json
+az grafana dashboard import -n kubecon110 -g kubecon110-rg --definition @./grafana/demo-dashboard.json
 
 # Retrieve AKS cluster credentials
 echo "Retrieving the Azure Kubernetes Service cluster credentials"
