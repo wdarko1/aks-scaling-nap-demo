@@ -28,7 +28,7 @@
     "editable": true,
     "fiscalYearStartMonth": 0,
     "graphTooltip": 0,
-    "id": 33,
+    "id": 49,
     "links": [],
     "liveNow": false,
     "panels": [
@@ -631,7 +631,7 @@
               "uid": "${datasource}"
             },
             "editorMode": "code",
-            "expr": "count(kube_node_info{cluster=\"$cluster\"})",
+            "expr": "count(sum by(instance) (node_uname_info{cluster=\"$cluster\"}))",
             "legendFormat": "__auto",
             "range": true,
             "refId": "A"
@@ -1910,7 +1910,7 @@
       ]
     },
     "time": {
-      "from": "now-1h",
+      "from": "now-15m",
       "to": "now"
     },
     "timepicker": {
@@ -1940,6 +1940,6 @@
     },
     "timezone": "utc",
     "title": "Demo Dashboard",
-    "version": 50,
+    "version": 3,
     "weekStart": ""
   }
