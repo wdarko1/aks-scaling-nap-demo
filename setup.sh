@@ -261,6 +261,10 @@ az grafana dashboard import -n ${IDENTIFIER}  -g ${CLUSTER_RG} --definition @./g
 az grafana dashboard import -n ${IDENTIFIER}  -g ${CLUSTER_RG} --definition @./grafana/demo-dashboard.json
 az grafana dashboard import -n kubecon110 -g kubecon110-rg --definition @./grafana/demo-dashboard.json
 
+# Retrieve Grafana dashboard URL
+echo "Retrieving the Grafana dashboard URL"
+GRAFANA_URL=$(az grafana show -n ${IDENTIFIER}  -g ${CLUSTER_RG} --query "properties.endpoint" -o tsv)
+
 # Retrieve AKS cluster credentials
 echo "Retrieving the Azure Kubernetes Service cluster credentials"
 az aks get-credentials -n ${CLUSTER_NAME} -g ${CLUSTER_RG}
@@ -337,9 +341,12 @@ echo "curl -k http://${INGRESS_IP}/workout -H \"Host: ${HOSTNAME}\""
 echo "curl -k http://${INGRESS_IP}/metrics -H \"Host: ${HOSTNAME}\""
 echo "curl -k http://${INGRESS_IP}/stats -H \"Host: ${HOSTNAME}\""
 echo ""
+echo "Grafana dashboard: ${GRAFANA_URL}"
+echo ""
+
 echo "curl -k http://${HOSTNAME}/workout"
 echo "curl -k http://${HOSTNAME}/metrics"
-echo "curl -k http://${HOSTNAME}/stats"
+echo "curl -k http://${GRAF}/stats"
 echo ""
 
 echo ""
