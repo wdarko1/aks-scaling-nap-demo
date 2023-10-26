@@ -127,7 +127,7 @@ LATEST_K8S_VERSION=$(az aks get-versions --location ${LOCATION} --query "values[
 
 # Create AKS cluster with the required add-ons and configuration
 echo "Creating an Azure Kubernetes Service cluster ${CLUSTER_NAME} with Kubernetes version ${LATEST_K8S_VERSION}"
-  -n ${CLUSTER_NAME} -g ${CLUSTER_RG} \
+az aks create -n ${CLUSTER_NAME} -g ${CLUSTER_RG} \
 --enable-azure-monitor-metrics \
 --azure-monitor-workspace-resource-id ${AZUREMONITORWORKSPACE_RESOURCE_ID} \
 --grafana-resource-id ${AZUREGRAFANA_ID} \
@@ -150,6 +150,12 @@ echo "Creating an Azure Kubernetes Service cluster ${CLUSTER_NAME} with Kubernet
     scale-down-delay-after-add=10m \
     scale-down-unneeded-time=10m \
     scan-interval=10s 
+
+# Wait until the provisioning state of the cluster is not updating
+echo "Waiting for the cluster to be ready"
+while [[ "$(az aks show -n ${CLUSTER_NAME} -g ${CLUSTER_RG} --query 'provisioningState' -o tsv)" == "Updating" ]]; do
+    sleep 10
+done
 
 echo "Creating user node pools"
 az aks nodepool add \

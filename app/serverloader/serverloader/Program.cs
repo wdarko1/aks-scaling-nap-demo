@@ -5,7 +5,7 @@ using System.Text;
 using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
-var memory = new List<string>();
+var memory = new List<long>();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -33,31 +33,18 @@ app.MapGet("/", () =>
 
 app.MapGet("/workout", () =>
 {
-    // Size of a single string to be stored in memory
-    var sizeKB = 64;
-    var limitInMB = 120;
-
-    // Generate a random string
-    var randomString = GenerateRandomString(sizeKB*1024);
-
-    // Bubble sort to do some work
-    var sortedString = BubbleSortString(randomString);
-
-    // Store it in memory
-    memory.Add(sortedString);
-
-    // Get the size of strings in the memory in KB
-    var memorySizeInKB = memory.Count*sizeKB;
-
+    long nthPrime = FindPrimeNumber(1000);
+    memory.Add(nthPrime);
+    
     // Garbage collect every once in a while when the number of items in the memory grows to limitInMB
-    if(memorySizeInKB >= limitInMB*1024)
+    if(Environment.WorkingSet/1024/1024 >= 110)
     {
         memory.Clear();
         GC.Collect();
     }
 
     // Return it
-    return sortedString;
+    return nthPrime;
 })
 .WithName("GetWorkout");
 
@@ -66,9 +53,9 @@ app.MapGet("/stats", () =>
     var machineName = Environment.MachineName;
     var processorCount = Environment.ProcessorCount;
     var memoryWorkingSetBytes = Environment.WorkingSet;
-    var totalStrings = memory.Count;
+    var totalPrimes = memory.Count;
     
-    return string.Format("Machine: {0} \nLogical processors: {1}\nStrings in memory: {2}\nMemory working set: {3} MB", machineName, processorCount, totalStrings, memoryWorkingSetBytes/1024/1024) ;
+    return string.Format("Machine: {0} \nLogical processors: {1}\Primes in memory: {2}\nMemory working set: {3} MB", machineName, processorCount, totalPrimes, memoryWorkingSetBytes/1024/1024) ;
 })
 .WithName("GetStats");
 
@@ -80,51 +67,28 @@ app.MapGet("/healthz", () =>
 
 app.Run();
 
-string GenerateRandomString(int LengthInBytes)
+long FindPrimeNumber(int n)
 {
-    var stringBuilder = new StringBuilder();
-    char letter;
-    for (int i = 0; i < LengthInBytes; i++)
+    int count=0;
+    long a = 2;
+    while(count<n)
     {
-        int randValue = rand.Next(0, 26);
-        letter = Convert.ToChar(randValue + 65);
-        stringBuilder.Append(letter);
-    }
-
-    return stringBuilder.ToString();
-}
-
-string BubbleSortString(string input)
-{
-    var inputArray = input.ToCharArray();
-    char temp;
-
-    for (int j = 0; j <= inputArray.Length - 2; j++)
-    {
-        for (int i = 0; i <= inputArray.Length - 2; i++)
+        long b = 2;
+        int prime = 1;// to check if found a prime
+        while(b * b <= a)
         {
-            if (inputArray[i].CompareTo(inputArray[i + 1]) > 0)
+            if(a % b == 0)
             {
-                temp = inputArray[i + 1];
-                inputArray[i + 1] = inputArray[i];
-                inputArray[i] = temp;
+                prime = 0;
+                break;
             }
+            b++;
         }
-    }
-
-    return new string(inputArray);
-}
-
-int CountOccuranceOf(char lookFor, string input)
-{
-    int count = 0;
-    for (int i = 0; i <= input.Length-1; i++)
-    {
-        if (input[i] == lookFor)
+        if(prime > 0)
         {
             count++;
         }
+        a++;
     }
-
-    return count;
+    return (--a);
 }
