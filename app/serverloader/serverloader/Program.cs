@@ -33,8 +33,7 @@ app.MapGet("/", () =>
 
 app.MapGet("/workout", () =>
 {
-    int randValue = rand.Next(1000, 2000);
-    long nthPrime = FindPrimeNumber(randValue);
+    long nthPrime = FindPrimeNumber(1000);
     memory.Add(nthPrime);
     
     // Garbage collect every once in a while when the number of items in the memory grows to limitInMB

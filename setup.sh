@@ -22,8 +22,8 @@ az config set core.only_show_errors=yes
 PREFIX=kubecon
 
 LOCATION=`readinput "Location" "eastus"`
-DNSZONE=`readinput "DNS Zone" "aks.azure.sabbour.me"`
-DNSZONE_RESOURCEGROUP=`readinput "DNS Zone Resource Group" "azure.sabbour.me-rg"`
+DNSZONE=`readinput "DNS Zone" "demo.azure.sabbour.me"`
+DNSZONE_RESOURCEGROUP=`readinput "DNS Zone Resource Group" "kubecondemo"`
 PREFIX=`readinput "Prefix" "${PREFIX}"`
 RANDOMSTRING=`readinput "Random string" "$(mktemp --dry-run XXX | tr '[:upper:]' '[:lower:]')"`
 IDENTIFIER="${PREFIX}${RANDOMSTRING}"
@@ -135,7 +135,7 @@ az aks create -n ${CLUSTER_NAME} -g ${CLUSTER_RG} \
 --enable-oidc-issuer \
 --enable-msi-auth-for-monitoring \
 --enable-keda \
---node-vm-size Standard_DS2_v2 \
+--node-vm-size Standard_DS4_v2 \
 --enable-addons azure-keyvault-secrets-provider,web_application_routing \
 --enable-secret-rotation \
 --network-dataplane cilium \
@@ -166,7 +166,7 @@ az aks nodepool add \
   --enable-cluster-autoscaler \
   --min-count 1 \
   --max-count 30 \
-  --node-vm-size Standard_B2ms
+  --node-vm-size Standard_B4ms
 
 echo ""
 echo "Creating user node pools 2/4"
@@ -177,7 +177,7 @@ az aks nodepool add \
   --enable-cluster-autoscaler \
   --min-count 1 \
   --max-count 30 \
-  --node-vm-size Standard_B2ms
+  --node-vm-size Standard_B4ms
 
 echo ""
 echo "Creating user node pools 3/4"
@@ -188,7 +188,7 @@ az aks nodepool add \
   --enable-cluster-autoscaler \
   --min-count 1 \
   --max-count 30 \
-  --node-vm-size Standard_B2ms
+  --node-vm-size Standard_B4ms
 
 echo ""
 echo "Creating user node pools 4/4"
@@ -199,7 +199,7 @@ az aks nodepool add \
   --enable-cluster-autoscaler \
   --min-count 1 \
   --max-count 30 \
-  --node-vm-size Standard_B2ms
+  --node-vm-size Standard_B4ms
 
 
 echo ""
