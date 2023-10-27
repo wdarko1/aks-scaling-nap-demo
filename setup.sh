@@ -44,6 +44,7 @@ echo "|               ABOUT TO RUN THE SCRIPT                |"
 echo "========================================================"
 echo ""
 echo "Will execute against subscription: ${AZURE_SUBSCRIPTION_ID}"
+echo "To change, terminate the script, run az account set --subscription <subscrption id> and run the script again."
 echo "Continue? Type y or Y."
 read REPLY
 echo
