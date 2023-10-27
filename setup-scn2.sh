@@ -145,7 +145,12 @@ az aks create -n ${CLUSTER_NAME} -g ${CLUSTER_RG} \
 --kubernetes-version ${LATEST_K8S_VERSION} \
 --enable-cluster-autoscaler \
 --min-count 1 \
---max-count 5
+--max-count 5 \
+--cluster-autoscaler-profile \
+    max-empty-bulk-delete=10 \
+    scale-down-delay-after-add=1m \
+    scale-down-unneeded-time=5m \
+    scan-interval=20s 
 
 # Wait until the provisioning state of the cluster is not updating
 echo "Waiting for the cluster to be ready"

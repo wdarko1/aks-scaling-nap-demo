@@ -22,7 +22,7 @@ spec:
           image: ghcr.io/sabbour/aks-scaling-demo:main
           resources:
             requests:
-              cpu: 500m
+              cpu: 1000m
               memory: 100Mi
             limits:
               cpu: 1000m
