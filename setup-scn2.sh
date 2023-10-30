@@ -33,8 +33,8 @@ CLUSTER_NAME="${IDENTIFIER}"
 DEPLOYMENT_NAME="${IDENTIFIER}-deployment"
 HOSTNAME="${IDENTIFIER}.${DNSZONE}"
 
-LATEST_K8S_VERSION=$(az aks get-versions --location ${LOCATION} --query "values[?isPreview == null] | sort_by(reverse(@), &version)[-1:].version" -o tsv)
-AVAILABLE_K8S_VERSIONS=$(az aks get-versions --location ${LOCATION} --query "values[?isPreview == null][].version" -o tsv | tr '\n' ',' | sed 's/,$//')
+AVAILABLE_K8S_VERSIONS=$(az aks get-versions --location ${LOCATION} --query "sort(values[?isPreview == null][].patchVersions.keys(@)[-1])" -o tsv | tr '\n' ',' | sed 's/,$//')
+LATEST_K8S_VERSION=$(az aks get-versions --location ${LOCATION} --query "sort(values[?isPreview == null][].patchVersions.keys(@)[-1])[-1]" -o tsv)
 K8S_VERSION=`readinput "Kubernetes version (${AVAILABLE_K8S_VERSIONS})" "${LATEST_K8S_VERSION}"`
 
 AZURE_TENANT_ID=$(az account show --query tenantId -o tsv)
