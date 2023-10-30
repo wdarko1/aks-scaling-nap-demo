@@ -12,7 +12,7 @@
 1. Login using `az login`
 1. Make sure `kubectl` is installed
 1. Make sure `yq` is installed (https://github.com/mikefarah/yq/#install)
-1. Run `./setup.sh`
+1. Run `./setup.sh` (or `./setup-scn2.sh` for the optimized setup)
 
 ## Exposed endpoints
 
@@ -24,6 +24,5 @@
 
 1. Run a load test against the `/workout` endpoint
 1. Review the Grafana dashboards
-1. Observe VPA updating requests and limits
 1. Observe KEDA scaling the `serverloader` deployment based on requests per second
 1. Observe cluster autoscaler adding more nodes to the cluster
