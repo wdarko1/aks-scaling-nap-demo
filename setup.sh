@@ -33,6 +33,10 @@ CLUSTER_NAME="${IDENTIFIER}"
 DEPLOYMENT_NAME="${IDENTIFIER}-deployment"
 HOSTNAME="${IDENTIFIER}.${DNSZONE}"
 
+LATEST_K8S_VERSION=$(az aks get-versions --location ${LOCATION} --query "values[?isPreview == null] | sort_by(reverse(@), &version)[-1:].version" -o tsv)
+AVAILABLE_K8S_VERSIONS=$(az aks get-versions --location ${LOCATION} --query "values[?isPreview == null][].version" -o tsv | tr '\n' ',' | sed 's/,$//')
+K8S_VERSION=`readinput "Kubernetes version (${AVAILABLE_K8S_VERSIONS})" "${LATEST_K8S_VERSION}"`
+
 AZURE_TENANT_ID=$(az account show --query tenantId -o tsv)
 AZURE_SUBSCRIPTION_ID=$(az account show --query id -o tsv)
 CURRENT_UPN=$(az account show --query user.name -o tsv) # Get current user's UPN (for role assignments)
@@ -122,12 +126,8 @@ echo "|                  CREATING AKS CLUSTER                |"
 echo "========================================================"
 echo ""
 
-# Finding out the latest version of Kubernetes available in the region
-echo "Finding out the latest version of Kubernetes available in the ${LOCATION} region"
-LATEST_K8S_VERSION=$(az aks get-versions --location ${LOCATION} --query "values[?isPreview == null] | sort_by(reverse(@), &version)[-1:].version" -o tsv)
-
 # Create AKS cluster with the required add-ons and configuration
-echo "Creating an Azure Kubernetes Service cluster ${CLUSTER_NAME} with Kubernetes version ${LATEST_K8S_VERSION}"
+echo "Creating an Azure Kubernetes Service cluster ${CLUSTER_NAME} with Kubernetes version ${K8S_VERSION}"
 az aks create -n ${CLUSTER_NAME} -g ${CLUSTER_RG} \
 --enable-azure-monitor-metrics \
 --azure-monitor-workspace-resource-id ${AZUREMONITORWORKSPACE_RESOURCE_ID} \
