@@ -270,26 +270,16 @@
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
+            "fillOpacity": 80,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
-            "lineInterpolation": "linear",
             "lineWidth": 1,
-            "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
             },
             "thresholdsStyle": {
               "mode": "off"
@@ -318,20 +308,28 @@
         "x": 12,
         "y": 5
       },
-      "id": 38,
+      "id": 43,
       "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
         "legend": {
           "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
         },
+        "orientation": "auto",
+        "showValue": "always",
+        "stacking": "normal",
         "tooltip": {
           "mode": "single",
           "sort": "none"
-        }
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 100
       },
-      "pluginVersion": "9.5.13",
       "targets": [
         {
           "datasource": {
@@ -339,27 +337,14 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(kube_node_status_condition{cluster=\"$cluster\", condition=\"Ready\", status=\"true\"}==1)",
-          "hide": false,
-          "legendFormat": "Ready",
+          "expr": "sum by (nodepool) (label_replace(kube_node_status_condition {condition=\"ready\", status=\"true\"}==1, \"nodepool\", \"$1\", \"node\", \"aks-(.*)-.*-.*\"))",
+          "legendFormat": "__auto",
           "range": true,
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "editorMode": "code",
-          "expr": "sum(kube_node_status_condition{cluster=\"$cluster\", condition=\"NotReady\", status=\"true\"}==1)",
-          "hide": false,
-          "legendFormat": "NotReady",
-          "range": true,
-          "refId": "B"
         }
       ],
       "title": "Nodes",
-      "type": "timeseries"
+      "type": "barchart"
     },
     {
       "aliasColors": {
@@ -403,7 +388,7 @@
         "sort": "avg",
         "sortDesc": true,
         "total": false,
-        "values": true
+        "values": false
       },
       "lines": true,
       "linewidth": 2,
@@ -592,8 +577,8 @@
       {
         "current": {
           "selected": false,
-          "text": "Managed_Prometheus",
-          "value": "Managed_Prometheus"
+          "text": "Managed_Prometheus_kcdefault",
+          "value": "Managed_Prometheus_kcdefault"
         },
         "hide": 0,
         "includeAll": false,
@@ -608,6 +593,11 @@
         "type": "datasource"
       },
       {
+        "current": {
+          "selected": false,
+          "text": "kcdefault",
+          "value": "kcdefault"
+        },
         "datasource": {
           "type": "datasource",
           "uid": "$datasource"
@@ -735,7 +725,7 @@
     ]
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-30m",
     "to": "now"
   },
   "timepicker": {
@@ -765,7 +755,6 @@
   },
   "timezone": "utc",
   "title": "Demo Dashboard",
-  "uid": "b61709bd-3418-4168-8eaa-4a9c6979e6ad",
-  "version": 2,
+  "version": 4,
   "weekStart": ""
 }
