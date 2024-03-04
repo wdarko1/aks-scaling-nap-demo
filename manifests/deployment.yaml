@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: serverloader
-          image: ghcr.io/sabbour/aks-scaling-demo:main
+          image: ghcr.io/sabbour/aks-scaling-nap-demo:main
           resources:
             requests:
               cpu: 100m
