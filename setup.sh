@@ -128,6 +128,7 @@ echo "========================================================"
 echo "|                  CREATING AKS CLUSTER                |"
 echo "========================================================"
 echo ""
+echo "Features: Prometheus and Grafana, Container Insights for Logs, Workload Identity, KEDA, VPA, NAP, Azure Key Vault, Azure CNI Overlay with Cilium, Application Routing"
 
 # Create AKS cluster with the required add-ons and configuration
 echo "Creating an Azure Kubernetes Service cluster ${CLUSTER_NAME} with Kubernetes version ${K8S_VERSION}"
@@ -141,16 +142,12 @@ az aks create -n ${CLUSTER_NAME} -g ${CLUSTER_RG} \
 --enable-keda \
 --enable-vpa \
 --node-provisioning-mode Auto \
---enable-addons azure-keyvault-secrets-provider,web_application_routing \
+--enable-addons azure-keyvault-secrets-provider,monitoring \
 --enable-secret-rotation \
 --network-dataplane cilium \
 --network-plugin azure \
 --network-plugin-mode overlay \
 --kubernetes-version ${LATEST_K8S_VERSION}
-
-# Enable Container Insights for container logs
-echo "Enabling Container Insights for container logs"
-az aks enable-addons -a monitoring -n ${CLUSTER_NAME} -g ${CLUSTER_RG}
 
 echo ""
 echo "========================================================"
@@ -203,7 +200,7 @@ else
 fi
 
 echo "Attaching the zone to the app routing addon and assigning the DNS Zone Contributor permission"
-az aks approuting zone add -g ${CLUSTER_RG} -n ${CLUSTER_NAME} --ids=${AZUREDNS_ZONEID} --attach-zones
+az aks approuting zone add -g ${CLUSTER_RG} -n ${CLUSTER_NAME} --ids="${AZUREDNS_ZONEID}" --attach-zones
 
 echo ""
 echo "========================================================"
