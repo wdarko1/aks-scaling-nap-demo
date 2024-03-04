@@ -10,6 +10,7 @@
 
 ## Setup
 
+1. Clone the repository locally.
 1. Login using `az login`.
 1. Make sure `kubectl` is installed.
 1. Make sure `yq` is installed (https://github.com/mikefarah/yq/#install).
