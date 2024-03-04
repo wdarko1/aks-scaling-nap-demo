@@ -1,7 +1,7 @@
 apiVersion: keda.sh/v1alpha1
 kind: TriggerAuthentication
 metadata:
-  name: azure-prometheus-auth
+  name: azure-managed-prometheus-trigger-auth
   namespace: serverloader
 spec:
   podIdentity:

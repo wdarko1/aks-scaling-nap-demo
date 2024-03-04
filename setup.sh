@@ -18,12 +18,24 @@ echo ""
 # Disable warnings
 az config set core.only_show_errors=yes
 
+AZURE_TENANT_ID=$(az account show --query tenantId -o tsv)
+AZURE_SUBSCRIPTION_ID=$(az account show --query id -o tsv)
+CURRENT_UPN=$(az account show --query user.name -o tsv) # Get current user's UPN (for role assignments)
+CURRENT_OBJECT_ID=$(az ad user show --id ${CURRENT_UPN} --query id -o tsv) # Get current user's Object ID (for role assignments)
+
 # Parameters
-PREFIX=kubecon
+PREFIX=kceu24
 
 LOCATION=`readinput "Location" "eastus"`
-DNSZONE=`readinput "DNS Zone" "aks.azure.sabbour.me"`
-DNSZONE_RESOURCEGROUP=`readinput "DNS Zone Resource Group" "azure.sabbour.me-rg"`
+DNSZONE=`readinput "DNS Zone" "aks.contosonative.io"`
+DNSZONE_RESOURCEGROUP=`readinput "DNS Zone Resource Group" "contosonative.io-dns-rg"`
+
+# Use this to override the DNS Zone ID if the DNS zone is in a different subscription than the rest of the resources in this script
+# when this is set, the script will not attempt to retrieve the DNS zone ID and will use the provided value
+# set to blank in the inputs to use the default behavior
+DNSZONE_ID_OVERRIDE=`readinput "DNS Zone ID Override" "/subscriptions/26fe00f8-9173-4872-9134-bb1d2e00343a/resourceGroups/contosonative.io-dns-rg/providers/Microsoft.Network/dnszones/aks.contosonative.io"`
+DNSZONE_ID_OVERRIDE=`echo -- ${DNSZONE_ID_OVERRIDE}` # trim spaces
+
 PREFIX=`readinput "Prefix" "${PREFIX}"`
 RANDOMSTRING=`readinput "Random string" "$(mktemp --dry-run XXX | tr '[:upper:]' '[:lower:]')"`
 IDENTIFIER="${PREFIX}${RANDOMSTRING}"
@@ -33,15 +45,9 @@ CLUSTER_NAME="${IDENTIFIER}"
 DEPLOYMENT_NAME="${IDENTIFIER}-deployment"
 HOSTNAME="${IDENTIFIER}.${DNSZONE}"
 
-#LATEST_K8S_VERSION=$(az aks get-versions --location ${LOCATION} --query "values[?isPreview == null] | sort_by(reverse(@), &version)[-1:].version" -o tsv)
 AVAILABLE_K8S_VERSIONS=$(az aks get-versions --location ${LOCATION} --query "sort(values[?isPreview == null][].patchVersions.keys(@)[-1])" -o tsv | tr '\n' ',' | sed 's/,$//')
 LATEST_K8S_VERSION=$(az aks get-versions --location ${LOCATION} --query "sort(values[?isPreview == null][].patchVersions.keys(@)[-1])[-1]" -o tsv)
 K8S_VERSION=`readinput "Kubernetes version (${AVAILABLE_K8S_VERSIONS})" "${LATEST_K8S_VERSION}"`
-
-AZURE_TENANT_ID=$(az account show --query tenantId -o tsv)
-AZURE_SUBSCRIPTION_ID=$(az account show --query id -o tsv)
-CURRENT_UPN=$(az account show --query user.name -o tsv) # Get current user's UPN (for role assignments)
-CURRENT_OBJECT_ID=$(az ad user show --id ${CURRENT_UPN} --query id -o tsv) # Get current user's Object ID (for role assignments)
 
 echo ""
 echo "========================================================"
@@ -68,11 +74,7 @@ START="$(date +%s)"
 # Make sure the preview features are registered
 echo "Making sure that the features are registered"
 az extension add --upgrade --name aks-preview
-az feature register --namespace Microsoft.ContainerService --name AKS-KedaPreview -o none
-az feature register --namespace Microsoft.ContainerService --name AKS-VPAPreview -o none
-az feature register --namespace "Microsoft.ContainerService" --name CiliumDataplanePreview -o none
-az feature register --namespace "Microsoft.ContainerService" --name AzureOverlayPreview -o none
-az feature register --namespace "Microsoft.ContainerService" --name EnableWorkloadIdentityPreview -o none
+az feature register --namespace "Microsoft.ContainerService" --name "NodeAutoProvisioningPreview" -o none
 
 az provider register --namespace Microsoft.ContainerService -o none
 
@@ -116,7 +118,7 @@ echo "Granting Monitoring Reader role assignment to Grafana on the Azure Monitor
 az role assignment create --assignee ${AZUREGRAFANA_PRINCIPALID} --role "Monitoring Reader" --scope ${AZUREMONITORWORKSPACE_RESOURCE_ID}
 
 echo "Granting Monitoring Reader role assignment to Grafana on the subscription"
-az role assignment create --assignee ${AZUREGRAFANA_PRINCIPALID} --role "Monitoring Reader" --subscription ${AZURE_SUBSCRIPTION_ID}
+az role assignment create --assignee ${AZUREGRAFANA_PRINCIPALID} --role "Monitoring Reader" --scope "/subscriptions/${AZURE_SUBSCRIPTION_ID}"
 
 echo "Sleeping to allow for identity to propagate"
 sleep 60
@@ -137,67 +139,18 @@ az aks create -n ${CLUSTER_NAME} -g ${CLUSTER_RG} \
 --enable-oidc-issuer \
 --enable-msi-auth-for-monitoring \
 --enable-keda \
---node-vm-size Standard_DS4_v2 \
+--enable-vpa \
+--node-provisioning-mode Auto \
 --enable-addons azure-keyvault-secrets-provider,web_application_routing \
 --enable-secret-rotation \
 --network-dataplane cilium \
 --network-plugin azure \
 --network-plugin-mode overlay \
---kubernetes-version ${LATEST_K8S_VERSION} \
---enable-cluster-autoscaler \
---min-count 1 \
---max-count 5
+--kubernetes-version ${LATEST_K8S_VERSION}
 
-# Wait until the provisioning state of the cluster is not updating
-echo "Waiting for the cluster to be ready"
-while [[ "$(az aks show -n ${CLUSTER_NAME} -g ${CLUSTER_RG} --query 'provisioningState' -o tsv)" == "Updating" ]]; do
-    sleep 10
-done
-
-echo ""
-echo "Creating user node pools 1/4"
-az aks nodepool add \
-  -g ${CLUSTER_RG} \
-  -n selftune1 \
-  --cluster-name ${CLUSTER_NAME} \
-  --enable-cluster-autoscaler \
-  --min-count 1 \
-  --max-count 30 \
-  --node-vm-size Standard_B4ms
-
-echo ""
-echo "Creating user node pools 2/4"
-az aks nodepool add \
-  -g ${CLUSTER_RG} \
-  -n selftune2 \
-  --cluster-name ${CLUSTER_NAME} \
-  --enable-cluster-autoscaler \
-  --min-count 1 \
-  --max-count 30 \
-  --node-vm-size Standard_B4ms
-
-echo ""
-echo "Creating user node pools 3/4"
-az aks nodepool add \
-  -g ${CLUSTER_RG} \
-  -n selftune3 \
-  --cluster-name ${CLUSTER_NAME} \
-  --enable-cluster-autoscaler \
-  --min-count 1 \
-  --max-count 30 \
-  --node-vm-size Standard_B4ms
-
-echo ""
-echo "Creating user node pools 4/4"
-az aks nodepool add \
-  -g ${CLUSTER_RG} \
-  -n selftune4 \
-  --cluster-name ${CLUSTER_NAME} \
-  --enable-cluster-autoscaler \
-  --min-count 1 \
-  --max-count 30 \
-  --node-vm-size Standard_B4ms
-
+# Enable Container Insights for container logs
+echo "Enabling Container Insights for container logs"
+az aks enable-addons -a monitoring -n ${CLUSTER_NAME} -g ${CLUSTER_RG}
 
 echo ""
 echo "========================================================"
@@ -213,6 +166,12 @@ KEDA_UAMI_CLIENTID=$(az identity show -n keda-${CLUSTER_NAME} -g ${CLUSTER_RG} -
 KEDA_UAMI_PRINCIPALID=$(az identity show -n keda-${CLUSTER_NAME} -g ${CLUSTER_RG} --query principalId -o tsv)
 echo "Will later update the KEDA TriggerAuthentication to use this client identity ${KEDA_UAMI_CLIENTID}"
 echo "Will later update the role assignment to use this principal identity ${KEDA_UAMI_PRINCIPALID}"
+
+# Wait until the provisioning state of the cluster is not updating
+echo "Waiting for the cluster to be ready"
+while [[ "$(az aks show -n ${CLUSTER_NAME} -g ${CLUSTER_RG} --query 'provisioningState' -o tsv)" == "Updating" ]]; do
+    sleep 10
+done
 
 echo ""
 echo "Sleeping to allow for identity to propagate"
@@ -231,27 +190,20 @@ az role assignment create --assignee ${KEDA_UAMI_PRINCIPALID} --role "Monitoring
 
 echo ""
 echo "========================================================"
-echo "|             CONFIGURE APP ROUTER ADD-ON              |"
+echo "|             CONFIGURE APP ROUTING ADD-ON             |"
 echo "========================================================"
 echo ""
 
-echo "Retrieving the app router add-on managed identity"
-APPROUTER_IDENTITY_OBJECTID=$(az aks show -n ${CLUSTER_NAME} -g ${CLUSTER_RG} --query ingressProfile.webAppRouting.identity.objectId -o tsv)
+if [ -z "${DNSZONE_ID_OVERRIDE}" ]; then
+  echo "Retrieving the Azure DNS zone ID for ${DNSZONE} in resource group ${DNSZONE_RESOURCEGROUP}"
+  AZUREDNS_ZONEID=$(az network dns zone show -n ${DNSZONE} -g ${DNSZONE_RESOURCEGROUP} --query "id" --output tsv)
+else
+  echo "Using the provided Azure DNS zone ID for ${DNSZONE}"
+  AZUREDNS_ZONEID=${DNSZONE_ID_OVERRIDE}
+fi
 
-echo "Retrieving the Azure DNS zone ID for ${DNSZONE} in resource group ${DNSZONE_RESOURCEGROUP}"
-AZUREDNS_ZONEID=$(az network dns zone show -n ${DNSZONE} -g ${DNSZONE_RESOURCEGROUP} --query "id" --output tsv)
-
-echo "Assigning the DNS Zone Contributor role to the addon's managed identity"
-az role assignment create --role "DNS Zone Contributor" --assignee $APPROUTER_IDENTITY_OBJECTID --scope $AZUREDNS_ZONEID
-
-# Wait until the provisioning state of the cluster is not updating
-echo "Waiting for the cluster to be ready"
-while [[ "$(az aks show -n ${CLUSTER_NAME} -g ${CLUSTER_RG} --query 'provisioningState' -o tsv)" == "Updating" ]]; do
-    sleep 10
-done
-
-echo "Updating the app router add-on to use the DNS Zone ${DNSZONE}"
-az aks addon update -n ${CLUSTER_NAME} -g ${CLUSTER_RG} --addon web_application_routing --dns-zone-resource-ids=$AZUREDNS_ZONEID
+echo "Attaching the zone to the app routing addon and assigning the DNS Zone Contributor permission"
+az aks approuting zone add -g ${CLUSTER_RG} -n ${CLUSTER_NAME} --ids=${AZUREDNS_ZONEID} --attach-zones
 
 echo ""
 echo "========================================================"
@@ -310,6 +262,7 @@ kubectl apply -f ./manifests/namespace.yaml
 kubectl apply -f ./manifests/deployment.yaml
 kubectl apply -f ./manifests/service.yaml
 kubectl apply -f ./manifests/pdb.yaml
+kubectl apply -f ./manifests/verticalpodautoscaler.yaml
 kubectl apply -f ./manifests/generated/ingress.yaml
 kubectl apply -f ./manifests/generated/triggerauthentication.yaml
 kubectl apply -f ./manifests/generated/scaledobject.yaml
@@ -330,10 +283,13 @@ do
     sleep 5
 done
 
-echo "Waiting for the A record to be created in the DNS zone"
-while [[ "$(az network dns record-set a list -g ${DNSZONE_RESOURCEGROUP} -z ${DNSZONE} --query "[?name=='${IDENTIFIER}'].provisioningState" -o tsv)" != "Succeeded" ]]; do
-    sleep 5
-done
+# Only show the DNS record creation if the DNS zone ID was not provided
+if [ -z "${DNSZONE_ID_OVERRIDE}" ]; then
+  echo "Waiting for the A record to be created in the DNS zone"
+  while [[ "$(az network dns record-set a list -g ${DNSZONE_RESOURCEGROUP} -z ${DNSZONE} --query "[?name=='${IDENTIFIER}'].provisioningState" -o tsv)" != "Succeeded" ]]; do
+      sleep 5
+  done
+fi
 
 echo ""
 echo "========================================================"
