@@ -6,7 +6,7 @@ readinput () {
     local VALUE
     read -p "${1} (default: ${2}): " VALUE
     VALUE="${VALUE:=${2}}"
-    echo $VALUE
+    echo "${VALUE}"
 }
 
 echo ""
@@ -32,9 +32,8 @@ DNSZONE_RESOURCEGROUP=`readinput "DNS Zone Resource Group" "contosonative.io-dns
 
 # Use this to override the DNS Zone ID if the DNS zone is in a different subscription than the rest of the resources in this script
 # when this is set, the script will not attempt to retrieve the DNS zone ID and will use the provided value
-# set to blank in the inputs to use the default behavior
+# TODO: Allow setting to blank
 DNSZONE_ID_OVERRIDE=`readinput "DNS Zone ID Override" "/subscriptions/26fe00f8-9173-4872-9134-bb1d2e00343a/resourceGroups/contosonative.io-dns-rg/providers/Microsoft.Network/dnszones/aks.contosonative.io"`
-DNSZONE_ID_OVERRIDE=`echo -- ${DNSZONE_ID_OVERRIDE}` # trim spaces
 
 PREFIX=`readinput "Prefix" "${PREFIX}"`
 RANDOMSTRING=`readinput "Random string" "$(mktemp --dry-run XXX | tr '[:upper:]' '[:lower:]')"`
@@ -150,7 +149,7 @@ az aks create -n ${CLUSTER_NAME} -g ${CLUSTER_RG} \
 --kubernetes-version ${LATEST_K8S_VERSION}
 
 echo "Tainting the system node pool to prevent workloads from running on it"
-az aks nodepool update --cluster-name ${CLUSTER_NAME} -g ${CLUSTER_RG} -n nodepool1 -node-taints CriticalAddonsOnly=true:NoSchedule
+az aks nodepool update --cluster-name ${CLUSTER_NAME} -g ${CLUSTER_RG} -n nodepool1 --node-taints "CriticalAddonsOnly=true:NoSchedule"
 
 echo ""
 echo "========================================================"
@@ -202,7 +201,7 @@ else
   AZUREDNS_ZONEID=${DNSZONE_ID_OVERRIDE}
 fi
 
-echo "Attaching the zone to the app routing addon and assigning the DNS Zone Contributor permission"
+echo "Attaching the zone (${AZUREDNS_ZONEID}) to the app routing addon and assigning the DNS Zone Contributor permission"
 az aks approuting zone add -g ${CLUSTER_RG} -n ${CLUSTER_NAME} --ids="${AZUREDNS_ZONEID}" --attach-zones
 
 echo ""
