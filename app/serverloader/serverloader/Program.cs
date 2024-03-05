@@ -33,15 +33,15 @@ app.MapGet("/", () =>
 
 app.MapGet("/workout", () =>
 {
-    long nthPrime = FindPrimeNumber(500);
-    memory.Add(nthPrime);
+    long nthPrime = FindPrimeNumber(10);
+    //memory.Add(nthPrime);
     
     // Garbage collect every once in a while when the number of items in the memory grows to limitInMB
-    if(Environment.WorkingSet/1024/1024 >= 110)
-    {
-        memory.Clear();
-        GC.Collect();
-    }
+    //if(Environment.WorkingSet/1024/1024 >= 110)
+    //{
+    //    memory.Clear();
+    //    GC.Collect();
+    //}
 
     // Return it
     return nthPrime;

@@ -149,6 +149,9 @@ az aks create -n ${CLUSTER_NAME} -g ${CLUSTER_RG} \
 --network-plugin-mode overlay \
 --kubernetes-version ${LATEST_K8S_VERSION}
 
+echo "Tainting the system node pool to prevent workloads from running on it"
+az aks nodepool update --cluster-name ${CLUSTER_NAME} -g ${CLUSTER_RG} -n nodepool1 -node-taints CriticalAddonsOnly=true:NoSchedule
+
 echo ""
 echo "========================================================"
 echo "|         CONFIGURE WORKLOAD IDENTITY FOR KEDA         |"
