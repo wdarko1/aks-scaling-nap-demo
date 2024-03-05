@@ -6,15 +6,15 @@ metadata:
 spec:
   scaleTargetRef:
     name: serverloader
-  minReplicaCount: 2
+  minReplicaCount: 0
   maxReplicaCount: 1000
   cooldownPeriod: 30
-  pollingInterval: 10
+  pollingInterval: 5
   triggers:
   - type: prometheus
     metadata:
       serverAddress: "" # Will be updated by script
-      threshold: '10'
+      threshold: '50'
       metricName: nginx_ingress_controller_requests
       query: sum(irate(nginx_ingress_controller_requests{ingress="serverloader"}[1m]))
     authenticationRef:
