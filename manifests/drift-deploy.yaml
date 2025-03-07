@@ -1,9 +1,8 @@
-#this 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: inflate
-  namespace: workshop
+  namespace: serveloader
 spec:
   replicas: 5
   selector:
